@@ -20,6 +20,16 @@ export const listForBooking = asyncHandler(async (req, res) => {
   return ok(res, payments);
 });
 
+export const listMine = asyncHandler(async (req, res) => {
+  const { data, meta } = await service.listMyPayments(req.query, ctxFrom(req));
+  return ok(res, data, meta);
+});
+
+export const listAll = asyncHandler(async (req, res) => {
+  const { data, meta } = await service.listAllPayments(req.query);
+  return ok(res, data, meta);
+});
+
 export const refresh = asyncHandler(async (req, res) => {
   const payment = await service.refreshPaymentStatus(req.params.id, ctxFrom(req));
   return ok(res, payment);

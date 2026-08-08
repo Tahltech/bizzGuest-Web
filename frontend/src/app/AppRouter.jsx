@@ -12,11 +12,17 @@ import { BookingReviewPage } from '../pages/booking/BookingReviewPage.jsx';
 import { AccountDashboardPage } from '../pages/account/AccountDashboardPage.jsx';
 import { MyBookingsPage } from '../pages/account/MyBookingsPage.jsx';
 import { BookingConfirmationPage } from '../pages/account/BookingConfirmationPage.jsx';
+import { MyPaymentsPage } from '../pages/account/MyPaymentsPage.jsx';
+import { ReceiptsPage } from '../pages/account/ReceiptsPage.jsx';
+import { ProfilePage } from '../pages/account/ProfilePage.jsx';
 import { DashboardHomePage } from '../pages/dashboard/DashboardHomePage.jsx';
 import { ApartmentsIndexPage } from '../pages/dashboard/apartments/ApartmentsIndexPage.jsx';
 import { ApartmentFormPage } from '../pages/dashboard/apartments/ApartmentFormPage.jsx';
 import { ReservationsIndexPage } from '../pages/dashboard/reservations/ReservationsIndexPage.jsx';
 import { ReservationDetailPage } from '../pages/dashboard/reservations/ReservationDetailPage.jsx';
+import { PaymentsIndexPage } from '../pages/dashboard/payments/PaymentsIndexPage.jsx';
+import { ReceiptsIndexPage } from '../pages/dashboard/receipts/ReceiptsIndexPage.jsx';
+import { ProfilePage as StaffProfilePage } from '../pages/dashboard/profile/ProfilePage.jsx';
 import { NotFoundPage } from '../pages/NotFoundPage.jsx';
 
 export function AppRouter() {
@@ -39,6 +45,9 @@ export function AppRouter() {
           <Route index element={<AccountDashboardPage />} />
           <Route path="bookings" element={<MyBookingsPage />} />
           <Route path="bookings/:reference" element={<BookingConfirmationPage />} />
+          <Route path="payments" element={<MyPaymentsPage />} />
+          <Route path="receipts" element={<ReceiptsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         <Route path="/dashboard" element={<DashboardLayout />}>
@@ -63,6 +72,15 @@ export function AppRouter() {
             path="reservations/:reference"
             element={<PermissionGuard permission="bookings.view"><ReservationDetailPage /></PermissionGuard>}
           />
+          <Route
+            path="payments"
+            element={<PermissionGuard permission="payments.view"><PaymentsIndexPage /></PermissionGuard>}
+          />
+          <Route
+            path="receipts"
+            element={<PermissionGuard permission="payments.view"><ReceiptsIndexPage /></PermissionGuard>}
+          />
+          <Route path="profile" element={<StaffProfilePage />} />
         </Route>
       </Route>
 

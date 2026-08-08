@@ -7,5 +7,9 @@ export const authApi = {
   logout: (refreshToken) => apiClient.post('/auth/logout', { refreshToken }).then((r) => r.data.data),
   me: () => apiClient.get('/auth/me').then((r) => r.data.data),
   forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }).then((r) => r.data.data),
-  resetPassword: (payload) => apiClient.post('/auth/reset-password', payload).then((r) => r.data.data)
+  resetPassword: (payload) => apiClient.post('/auth/reset-password', payload).then((r) => r.data.data),
+  getProfile: () => apiClient.get('/auth/profile').then((r) => r.data.data),
+  updateProfile: (payload) => apiClient.patch('/auth/profile', payload).then((r) => r.data.data),
+  changePassword: (payload) => apiClient.post('/auth/change-password', payload).then((r) => r.data.data),
+  deleteAccount: (payload) => apiClient.delete('/auth/account', { data: payload }).then((r) => r.data.data)
 };

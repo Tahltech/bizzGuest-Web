@@ -2,6 +2,8 @@ import { apiClient } from './client.js';
 
 export const paymentsApi = {
   listForBooking: (idOrReference) => apiClient.get(`/payments/bookings/${idOrReference}`).then((r) => r.data.data),
+  listMine: (params) => apiClient.get('/payments/me', { params }).then((r) => r.data),
+  listAll: (params) => apiClient.get('/payments', { params }).then((r) => r.data),
   initiateMobileMoney: (idOrReference, payload) =>
     apiClient.post(`/payments/bookings/${idOrReference}/mobile-money`, payload).then((r) => r.data.data),
   recordManual: (idOrReference, payload) =>

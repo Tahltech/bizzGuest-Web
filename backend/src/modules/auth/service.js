@@ -2,9 +2,10 @@ import argon2 from 'argon2';
 import crypto from 'node:crypto';
 import { db } from '../../db/knex.js';
 import { env } from '../../config/env.js';
-import { ConflictError, UnauthorizedError, ValidationError, NotFoundError } from '../../lib/errors.js';
+import { ConflictError, ForbiddenError, UnauthorizedError, ValidationError, NotFoundError } from '../../lib/errors.js';
 import { recordAuditLog } from '../audit/service.js';
 import { queueEmail } from '../email/service.js';
+import { encryptField } from '../../lib/encryption.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from './tokens.js';
 import * as repo from './repository.js';
 
@@ -154,4 +155,120 @@ export async function getCurrentUser(userId) {
   const userRow = await repo.findUserById(userId);
   if (!userRow) throw new NotFoundError('Account not found.');
   return buildAuthPayload(userRow);
+}
+
+function toProfileDTO(userRow, roles, permissions, guestRow) {
+  return {
+    id: userRow.id,
+    email: userRow.email,
+    fullName: userRow.full_name,
+    phone: userRow.phone,
+    roles,
+    permissions,
+    isSuperAdmin: roles.includes('super_admin'),
+    createdAt: userRow.created_at,
+    lastLoginAt: userRow.last_login_at,
+    guestDetails: {
+      country: guestRow?.country ?? null,
+      address: guestRow?.address ?? null,
+      idType: guestRow?.id_type ?? null,
+      hasIdNumberOnFile: Boolean(guestRow?.id_number_encrypted),
+      emergencyContactName: guestRow?.emergency_contact_name ?? null,
+      emergencyContactPhone: guestRow?.emergency_contact_phone ?? null,
+      isVerified: Boolean(guestRow?.is_verified)
+    }
+  };
+}
+
+export async function getFullProfile(userId) {
+  const userRow = await repo.findUserById(userId);
+  if (!userRow) throw new NotFoundError('Account not found.');
+  const { roles, permissions } = await repo.getRolesAndPermissionsForUser(userId);
+  const guestRow = await repo.getGuestProfileForUser(userId);
+  return toProfileDTO(userRow, roles, permissions, guestRow);
+}
+
+export async function updateProfile(userId, input, ctx) {
+  const userRow = await repo.findUserById(userId);
+  if (!userRow) throw new NotFoundError('Account not found.');
+
+  const guestFields = {};
+  if (input.country !== undefined) guestFields.country = input.country;
+  if (input.address !== undefined) guestFields.address = input.address;
+  if (input.idType !== undefined) guestFields.id_type = input.idType;
+  if (input.idNumber !== undefined) guestFields.id_number_encrypted = encryptField(input.idNumber);
+  if (input.emergencyContactName !== undefined) guestFields.emergency_contact_name = input.emergencyContactName;
+  if (input.emergencyContactPhone !== undefined) guestFields.emergency_contact_phone = input.emergencyContactPhone;
+
+  await db.transaction(async (trx) => {
+    if (input.fullName !== undefined || input.phone !== undefined) {
+      await repo.updateUserBasics(userId, { fullName: input.fullName, phone: input.phone }, trx);
+    }
+    if (Object.keys(guestFields).length > 0) {
+      await repo.upsertGuestProfile(
+        userId,
+        { fullName: input.fullName ?? userRow.full_name, email: userRow.email, phone: input.phone ?? userRow.phone, fields: guestFields },
+        trx
+      );
+    }
+    await recordAuditLog({ userId, action: 'user.profile_updated', entityType: 'user', entityId: userId, ip: ctx.ip }, trx);
+  });
+
+  return getFullProfile(userId);
+}
+
+export async function changeOwnPassword(userId, { currentPassword, newPassword }, ctx) {
+  const userRow = await repo.findUserById(userId);
+  if (!userRow) throw new NotFoundError('Account not found.');
+
+  const valid = await argon2.verify(userRow.password_hash, currentPassword);
+  if (!valid) throw new ValidationError('Your current password is incorrect.');
+
+  const passwordHash = await argon2.hash(newPassword);
+  const payload = await buildAuthPayload(userRow);
+
+  await db.transaction(async (trx) => {
+    await repo.updatePasswordHash(userId, passwordHash, trx);
+    // Revoke every other session — a password change is a signal that old
+    // sessions (possibly on a device that shouldn't have access anymore)
+    // must not survive it. The caller's own session continues via the fresh
+    // token pair issued below instead of being caught in this revoke.
+    await repo.revokeAllSessionsForUser(userId, trx);
+    await recordAuditLog({ userId, action: 'user.password_changed', entityType: 'user', entityId: userId, ip: ctx.ip }, trx);
+  });
+
+  const tokens = await issueTokenPair(payload, ctx);
+  return { user: payload, ...tokens };
+}
+
+/**
+ * Self-service account deletion — deliberately restricted to super_admin.
+ * Regular guests and other staff never see this option on their own profile;
+ * removing a guest or staff member's account (as opposed to deleting your
+ * own) is an administrative action for a future staff-management module, not
+ * a self-service one. Soft-deletes so booking/payment/audit history tied to
+ * the account stays intact.
+ */
+export async function deleteOwnAccount(userId, { password }, ctx) {
+  const userRow = await repo.findUserById(userId);
+  if (!userRow) throw new NotFoundError('Account not found.');
+
+  const { roles } = await repo.getRolesAndPermissionsForUser(userId);
+  if (!roles.includes('super_admin')) {
+    throw new ForbiddenError('Only a Super Administrator can delete an account, and only their own from this page.');
+  }
+
+  const valid = await argon2.verify(userRow.password_hash, password);
+  if (!valid) throw new ValidationError('Your password is incorrect.');
+
+  const activeSuperAdmins = await repo.countActiveUsersWithRole('super_admin');
+  if (activeSuperAdmins <= 1) {
+    throw new ConflictError('This is the only active Super Administrator account — create another one before deleting this one.');
+  }
+
+  await db.transaction(async (trx) => {
+    await repo.softDeleteUser(userId, trx);
+    await repo.revokeAllSessionsForUser(userId, trx);
+    await recordAuditLog({ userId, action: 'user.self_deleted', entityType: 'user', entityId: userId, ip: ctx.ip }, trx);
+  });
 }

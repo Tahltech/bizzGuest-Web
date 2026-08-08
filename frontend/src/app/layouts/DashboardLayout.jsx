@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, Link } from 'react-router-dom';
 import { Logo } from '../../components/Logo.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/guests', label: 'Guests', permission: 'guests.view' },
   { to: '/dashboard/calendar', label: 'Calendar', permission: 'bookings.view' },
   { to: '/dashboard/payments', label: 'Payments', permission: 'payments.view' },
+  { to: '/dashboard/receipts', label: 'Receipts', permission: 'payments.view' },
   { to: '/dashboard/expenses', label: 'Expenses', permission: 'expenses.view' },
   { to: '/dashboard/housekeeping', label: 'Housekeeping', permission: 'housekeeping.view' },
   { to: '/dashboard/maintenance', label: 'Maintenance', permission: 'maintenance.view' },
@@ -39,7 +40,9 @@ export function DashboardLayout() {
           ))}
         </nav>
         <div className="mt-6 border-t border-white/10 pt-4">
-          <p className="px-2 text-xs text-cream/50">{user?.email}</p>
+          <Link to="/dashboard/profile" className="block rounded-md px-2 py-1 text-xs text-cream/50 transition hover:bg-white/5 hover:text-gold">
+            {user?.email}
+          </Link>
           <button onClick={logout} className="mt-2 w-full rounded-md px-3 py-2 text-left text-sm text-cream/70 hover:bg-white/5 hover:text-cream">
             Logout
           </button>

@@ -28,19 +28,14 @@ export function AuthProvider({ children }) {
     bootstrap();
   }, []);
 
-  const login = useCallback(async (credentials) => {
-    const result = await authApi.login(credentials);
+  const applyAuthResult = useCallback((result) => {
     setTokens(result);
     setUser(result.user);
     return result.user;
   }, []);
 
-  const register = useCallback(async (payload) => {
-    const result = await authApi.register(payload);
-    setTokens(result);
-    setUser(result.user);
-    return result.user;
-  }, []);
+  const login = useCallback(async (credentials) => applyAuthResult(await authApi.login(credentials)), [applyAuthResult]);
+  const register = useCallback(async (payload) => applyAuthResult(await authApi.register(payload)), [applyAuthResult]);
 
   const logout = useCallback(async () => {
     const storedRefreshToken = loadStoredRefreshToken();
@@ -52,6 +47,11 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  /** Shallow-merges fields (e.g. a new fullName) into the in-memory user after a profile edit — no new tokens needed since roles/permissions didn't change. */
+  const patchUser = useCallback((fields) => {
+    setUser((prev) => (prev ? { ...prev, ...fields } : prev));
+  }, []);
+
   const hasPermission = useCallback(
     (slug) => Boolean(user?.permissions?.includes(slug)),
     [user]
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
   const hasRole = useCallback((slug) => Boolean(user?.roles?.includes(slug)), [user]);
 
-  const value = { user, isBootstrapping, login, register, logout, hasPermission, hasRole };
+  const value = { user, isBootstrapping, login, register, logout, applyAuthResult, patchUser, hasPermission, hasRole };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -5,6 +5,10 @@ function ctxFrom(req) {
   return { ip: req.ip, userAgent: req.headers['user-agent'] };
 }
 
+function authedCtxFrom(req) {
+  return { userId: req.user.id, ip: req.ip, userAgent: req.headers['user-agent'] };
+}
+
 export const register = asyncHandler(async (req, res) => {
   const result = await authService.register(req.body, ctxFrom(req));
   return created(res, result);
@@ -38,4 +42,24 @@ export const resetPassword = asyncHandler(async (req, res) => {
 export const me = asyncHandler(async (req, res) => {
   const user = await authService.getCurrentUser(req.user.id);
   return ok(res, user);
+});
+
+export const getProfile = asyncHandler(async (req, res) => {
+  const profile = await authService.getFullProfile(req.user.id);
+  return ok(res, profile);
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const profile = await authService.updateProfile(req.user.id, req.body, authedCtxFrom(req));
+  return ok(res, profile);
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const result = await authService.changeOwnPassword(req.user.id, req.body, authedCtxFrom(req));
+  return ok(res, result);
+});
+
+export const deleteAccount = asyncHandler(async (req, res) => {
+  await authService.deleteOwnAccount(req.user.id, req.body, authedCtxFrom(req));
+  return ok(res, { deleted: true });
 });

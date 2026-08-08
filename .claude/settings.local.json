@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(SUPER_ADMIN_EMAIL=\"admin2@bizzguest.local\" SUPER_ADMIN_PASSWORD=\"TempAdmin123!\" SUPER_ADMIN_NAME=\"Temp Admin\" npm run create-admin)"
+    ]
+  }
+}

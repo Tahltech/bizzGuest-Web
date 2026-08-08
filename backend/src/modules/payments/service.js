@@ -9,6 +9,10 @@ import { logger } from '../../lib/logger.js';
 import * as repo from './repository.js';
 
 const PAYABLE_BOOKING_STATUSES = ['pending', 'awaiting_payment', 'confirmed', 'checked_in'];
+// A pending Campay attempt older than this is treated as abandoned rather than blocking a retry forever.
+const STALE_PAYMENT_ATTEMPT_MS = 5 * 60 * 1000;
+// A manual payment with identical booking/method/amount recorded this recently is almost certainly a double-submit, not a second real payment.
+const DUPLICATE_MANUAL_PAYMENT_WINDOW_MS = 15 * 1000;
 
 function toPaymentDTO(row) {
   return {
@@ -151,16 +155,48 @@ export async function initiateMobileMoneyPayment(bookingIdOrReference, { method,
     );
   }
 
-  const idempotencyKey = uuid();
-  const paymentId = await repo.createPayment({
-    booking_id: bookingId,
-    method,
-    provider: 'campay',
-    amount_minor: balanceMinor,
-    currency: 'XAF',
-    status: 'pending',
-    idempotency_key: idempotencyKey
+  // Reserve the right to start a new attempt before ever touching Campay.
+  // The booking row acts as a mutex (same pattern as booking creation, §10):
+  // two near-simultaneous "Pay" clicks — a double-click, a network retry, two
+  // open tabs — must never both reach the point of firing a collection
+  // request. Whichever gets the lock first either hands back the attempt
+  // that's already in flight, or reserves a fresh payment row; the loser
+  // waits for that transaction to commit and then sees the same result.
+  const { reused, existingPayment, paymentId, idempotencyKey } = await db.transaction(async (trx) => {
+    await repo.findBookingForUpdate(bookingId, trx);
+
+    const active = await repo.findActivePaymentForBooking(bookingId, 'campay', trx);
+    if (active) {
+      const ageMs = Date.now() - new Date(active.created_at).getTime();
+      if (ageMs < STALE_PAYMENT_ATTEMPT_MS) {
+        return { reused: true, existingPayment: active };
+      }
+      // Stale — superseded, so a fresh attempt isn't blocked forever behind
+      // one Campay never confirmed (guest closed the prompt, lost signal, etc).
+      await repo.updatePayment(active.id, { status: 'failed' }, trx);
+      await repo.insertTransaction(
+        {
+          payment_id: active.id,
+          provider: 'campay',
+          provider_reference: active.provider_reference || active.idempotency_key,
+          event_status: 'failed',
+          raw_payload: JSON.stringify({ reason: 'superseded_by_new_attempt' })
+        },
+        trx
+      );
+    }
+
+    const key = uuid();
+    const id = await repo.createPayment(
+      { booking_id: bookingId, method, provider: 'campay', amount_minor: balanceMinor, currency: 'XAF', status: 'pending', idempotency_key: key },
+      trx
+    );
+    return { reused: false, paymentId: id, idempotencyKey: key };
   });
+
+  if (reused) {
+    return toPaymentDTO(existingPayment);
+  }
 
   const campay = getPaymentProvider('campay');
 
@@ -205,10 +241,19 @@ export async function initiateMobileMoneyPayment(bookingIdOrReference, { method,
 export async function recordManualPayment(bookingIdOrReference, { method, amountMinor, notes }, ctx) {
   const bookingId = await resolveBookingId(bookingIdOrReference);
 
-  const paymentId = await db.transaction(async (trx) => {
+  const { paymentId, duplicate } = await db.transaction(async (trx) => {
     const booking = await repo.findBookingForUpdate(bookingId, trx);
     if (!booking) throw new NotFoundError('Booking not found.');
     assertPayableStatus(booking);
+
+    // Locking the booking row above already serializes concurrent submissions
+    // for this booking; this catches the case where two identical requests
+    // both land inside that window (double-click, retried request) — each
+    // individually valid against the balance, but not two real payments.
+    const recent = await repo.findRecentDuplicateManualPayment(bookingId, { method, amountMinor }, DUPLICATE_MANUAL_PAYMENT_WINDOW_MS, trx);
+    if (recent) {
+      return { paymentId: recent.id, duplicate: true };
+    }
 
     const balanceMinor = booking.total_minor - booking.paid_minor;
     if (amountMinor > balanceMinor) {
@@ -239,8 +284,13 @@ export async function recordManualPayment(bookingIdOrReference, { method, amount
     await applySuccessfulPayment(bookingId, trx);
     await recordAuditLog({ userId: ctx.userId, action: 'payment.recorded_manual', entityType: 'payment', entityId: id, ip: ctx.ip, metadata: { bookingId, amountMinor, method } }, trx);
 
-    return id;
+    return { paymentId: id, duplicate: false };
   });
+
+  // Idempotent, same as the mobile-money path: a duplicate submission hands
+  // back the payment that already exists rather than erroring or double-
+  // counting the money.
+  if (duplicate) logger.warn(`[payments] duplicate manual payment submission suppressed for booking ${bookingId}`);
 
   return toPaymentDTO(await repo.findById(paymentId));
 }
@@ -311,6 +361,22 @@ export async function listPaymentsForBooking(bookingIdOrReference, ctx) {
 
   const rows = await repo.listForBooking(bookingId);
   return rows.map(toPaymentDTO);
+}
+
+function toPaymentListDTO(row) {
+  return { ...toPaymentDTO(row), bookingReference: row.booking_reference, apartmentName: row.apartment_name };
+}
+
+/** Every payment the signed-in guest has ever made, across all their bookings — powers the account "Payments" page. */
+export async function listMyPayments(query, ctx) {
+  const { rows, total } = await repo.listForUser(ctx.userId, query);
+  return { data: rows.map(toPaymentListDTO), meta: { page: query.page, perPage: query.perPage, total } };
+}
+
+/** Every payment in the system — the staff payments overview, gated by payments.view at the route level. */
+export async function listAllPayments(query) {
+  const { rows, total } = await repo.listAll(query);
+  return { data: rows.map(toPaymentListDTO), meta: { page: query.page, perPage: query.perPage, total } };
 }
 
 /** Handles a Campay webhook delivery: verifies the shared signing key, then re-confirms a claimed "succeeded" via the authoritative status endpoint before trusting it (see CampayProvider's documentation for why). */

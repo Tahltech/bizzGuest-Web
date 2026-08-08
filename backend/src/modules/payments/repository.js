@@ -1,5 +1,3 @@
-
-
 import { db } from '../../db/knex.js';
 
 export async function createPayment(data, trx = db) {
@@ -25,6 +23,24 @@ export async function listForBooking(bookingId, trx = db) {
 
 export async function listSucceededForBooking(bookingId, trx) {
   return trx('payments').where({ booking_id: bookingId, status: 'succeeded' });
+}
+
+/** The one payment attempt currently "in flight" for a booking via a given provider, if any — the guard against firing a second Campay collection request while the first hasn't resolved yet. */
+export async function findActivePaymentForBooking(bookingId, provider, trx = db) {
+  return trx('payments')
+    .where({ booking_id: bookingId, provider })
+    .whereIn('status', ['pending', 'processing'])
+    .orderBy('created_at', 'desc')
+    .first();
+}
+
+/** A manual payment recorded moments ago with identical terms — most likely a double-click/double-submit of the same staff action, not two genuine payments. */
+export async function findRecentDuplicateManualPayment(bookingId, { method, amountMinor }, withinMs, trx = db) {
+  return trx('payments')
+    .where({ booking_id: bookingId, provider: 'manual', method, amount_minor: amountMinor })
+    .where('created_at', '>', new Date(Date.now() - withinMs))
+    .orderBy('created_at', 'desc')
+    .first();
 }
 
 export async function updatePayment(id, data, trx = db) {
@@ -68,6 +84,41 @@ export async function findBookingWithGuest(bookingId, trx = db) {
       'a.name as apartment_name'
     )
     .first();
+}
+
+const LIST_COLUMNS = [
+  'p.id', 'p.booking_id', 'p.method', 'p.provider', 'p.amount_minor', 'p.currency',
+  'p.status', 'p.provider_reference', 'p.notes', 'p.created_at', 'p.updated_at',
+  'bk.reference as booking_reference', 'a.name as apartment_name'
+];
+
+function withBookingAndApartment() {
+  return db('payments as p')
+    .join('bookings as bk', 'bk.id', 'p.booking_id')
+    .leftJoin('apartments as a', 'a.id', 'bk.apartment_id');
+}
+
+/** Every payment across every booking made by this user's guest profile — powers the guest account "Payments" page. */
+export async function listForUser(userId, { page = 1, perPage = 20 } = {}) {
+  const guest = await db('guests').where({ user_id: userId }).first();
+  if (!guest) return { rows: [], total: 0 };
+
+  const query = withBookingAndApartment().where('bk.guest_id', guest.id);
+  const totalRow = await query.clone().clearSelect().count({ count: 'p.id' }).first();
+  const rows = await query.clone().select(LIST_COLUMNS).orderBy('p.created_at', 'desc').limit(perPage).offset((page - 1) * perPage);
+
+  return { rows, total: Number(totalRow.count) };
+}
+
+/** Every payment in the system — the staff-facing payments overview. */
+export async function listAll({ status, page = 1, perPage = 20 } = {}) {
+  const query = withBookingAndApartment();
+  if (status) query.where('p.status', status);
+
+  const totalRow = await query.clone().clearSelect().count({ count: 'p.id' }).first();
+  const rows = await query.clone().select(LIST_COLUMNS).orderBy('p.created_at', 'desc').limit(perPage).offset((page - 1) * perPage);
+
+  return { rows, total: Number(totalRow.count) };
 }
 
 export async function findStaffUserIdsForNotification(trx = db) {

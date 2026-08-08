@@ -16,3 +16,9 @@ export const manualPaymentSchema = z.object({
 export const refundSchema = z.object({
   reason: z.string().trim().min(2).max(255)
 });
+
+export const listQuerySchema = z.object({
+  status: z.enum(['pending', 'processing', 'succeeded', 'failed', 'refunded']).optional(),
+  page: z.coerce.number().int().positive().default(1),
+  perPage: z.coerce.number().int().positive().max(50).default(20)
+});
