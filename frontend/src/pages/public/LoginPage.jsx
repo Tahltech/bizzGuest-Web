@@ -17,7 +17,9 @@ export function LoginPage() {
     setServerError('');
     try {
       await login(values);
-      navigate(location.state?.from?.pathname || '/account', { replace: true });
+      const from = location.state?.from;
+      const target = from ? `${from.pathname}${from.search || ''}` : '/account';
+      navigate(target, { replace: true });
     } catch (err) {
       setServerError(extractErrorMessage(err, 'Incorrect email or password.'));
     }

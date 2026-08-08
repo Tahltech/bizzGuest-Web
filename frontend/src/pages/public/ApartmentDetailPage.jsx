@@ -3,12 +3,19 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apartmentsApi } from '../../api/apartments.js';
 import { formatXAF, formatDate } from '../../utils/formatCurrency.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export function ApartmentDetailPage() {
   const { slug } = useParams();
   const [params] = useSearchParams();
-  const checkIn = params.get('checkIn');
-  const checkOut = params.get('checkOut');
+  const { user } = useAuth();
+  const [checkIn, setCheckIn] = useState(params.get('checkIn') || '');
+  const [checkOut, setCheckOut] = useState(params.get('checkOut') || '');
+  const [guests, setGuests] = useState(params.get('guests') || '1');
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
   const { data: apartment, isLoading, isError } = useQuery({
@@ -95,16 +102,49 @@ export function ApartmentDetailPage() {
             <span className="text-sm text-ink-soft">/ night</span>
           </div>
 
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-stone-line pt-4">
+            <div>
+              <label className="label" htmlFor="detailCheckIn">Check-in</label>
+              <input id="detailCheckIn" type="date" min={todayISO()} className="input" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+            </div>
+            <div>
+              <label className="label" htmlFor="detailCheckOut">Check-out</label>
+              <input id="detailCheckOut" type="date" min={checkIn || todayISO()} className="input" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <label className="label" htmlFor="detailGuests">Guests</label>
+              <input id="detailGuests" type="number" min="1" max={apartment.maxGuests} className="input" value={guests} onChange={(e) => setGuests(e.target.value)} />
+            </div>
+          </div>
+
           {nights && (
             <div className="mt-4 space-y-2 border-t border-stone-line pt-4 text-sm">
               <div className="flex justify-between text-ink-soft"><span>{formatDate(checkIn)} — {formatDate(checkOut)}</span><span>{nights} night{nights > 1 ? 's' : ''}</span></div>
               <div className="flex justify-between font-medium"><span>Estimated total</span><span className="font-mono tabular-nums">{formatXAF(apartment.pricing?.nightMinor * nights)}</span></div>
-              <p className="text-xs text-ink-soft">Final price is confirmed at checkout, including any taxes or fees.</p>
+              <p className="text-xs text-ink-soft">Final price is confirmed on the next step.</p>
             </div>
           )}
 
-          <Link to="/login" className="btn-primary mt-6 w-full">Sign in to book</Link>
-          <p className="mt-2 text-center text-xs text-ink-soft">You'll confirm your dates and pay on the next step.</p>
+          {checkIn && checkOut ? (
+            user ? (
+              <Link to={`/book/${slug}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`} className="btn-primary mt-6 w-full">
+                Continue to book
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                state={{ from: { pathname: `/apartments/${slug}`, search: `?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}` } }}
+                className="btn-primary mt-6 w-full"
+              >
+                Sign in to book
+              </Link>
+            )
+          ) : (
+            <button type="button" disabled className="btn-primary mt-6 w-full opacity-50">
+              Select dates to continue
+            </button>
+          )}
+          <p className="mt-2 text-center text-xs text-ink-soft">You'll confirm details and pay on the next step.</p>
         </aside>
       </div>
     </div>

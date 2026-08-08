@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -9,6 +9,7 @@ export function RegisterPage() {
   const { t } = useTranslation();
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [serverError, setServerError] = useState('');
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
@@ -16,7 +17,9 @@ export function RegisterPage() {
     setServerError('');
     try {
       await registerUser(values);
-      navigate('/account', { replace: true });
+      const from = location.state?.from;
+      const target = from ? `${from.pathname}${from.search || ''}` : '/account';
+      navigate(target, { replace: true });
     } catch (err) {
       setServerError(extractErrorMessage(err, 'Could not create your account.'));
     }

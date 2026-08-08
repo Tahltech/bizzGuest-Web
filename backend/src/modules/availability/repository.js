@@ -60,9 +60,17 @@ export async function lockApartment(apartmentId, trx) {
   return trx('apartments').where({ id: apartmentId }).forUpdate().first();
 }
 
-/** Re-check inside the lock, using the identical predicate the public search used. */
+/**
+ * Re-check inside the lock, using the identical active/status/overlap
+ * conditions the public search used — anything less and a room taken
+ * offline for maintenance between search and booking could still be booked.
+ */
 export async function isApartmentAvailable(apartmentId, { checkIn, checkOut }, trx) {
-  const query = trx('apartments as a').where('a.id', apartmentId).whereNull('a.deleted_at');
+  const query = trx('apartments as a')
+    .where('a.id', apartmentId)
+    .whereNull('a.deleted_at')
+    .where('a.is_active', true)
+    .whereNotIn('a.status', ['maintenance', 'out_of_service']);
   excludeOverlapping(query, { checkIn, checkOut });
   const row = await query.first();
   return Boolean(row);

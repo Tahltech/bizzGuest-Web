@@ -8,10 +8,15 @@ import { ApartmentListPage } from '../pages/public/ApartmentListPage.jsx';
 import { ApartmentDetailPage } from '../pages/public/ApartmentDetailPage.jsx';
 import { LoginPage } from '../pages/public/LoginPage.jsx';
 import { RegisterPage } from '../pages/public/RegisterPage.jsx';
+import { BookingReviewPage } from '../pages/booking/BookingReviewPage.jsx';
 import { AccountDashboardPage } from '../pages/account/AccountDashboardPage.jsx';
+import { MyBookingsPage } from '../pages/account/MyBookingsPage.jsx';
+import { BookingConfirmationPage } from '../pages/account/BookingConfirmationPage.jsx';
 import { DashboardHomePage } from '../pages/dashboard/DashboardHomePage.jsx';
 import { ApartmentsIndexPage } from '../pages/dashboard/apartments/ApartmentsIndexPage.jsx';
 import { ApartmentFormPage } from '../pages/dashboard/apartments/ApartmentFormPage.jsx';
+import { ReservationsIndexPage } from '../pages/dashboard/reservations/ReservationsIndexPage.jsx';
+import { ReservationDetailPage } from '../pages/dashboard/reservations/ReservationDetailPage.jsx';
 import { NotFoundPage } from '../pages/NotFoundPage.jsx';
 
 export function AppRouter() {
@@ -23,11 +28,17 @@ export function AppRouter() {
         <Route path="/apartments/:slug" element={<ApartmentDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        <Route element={<AuthGuard />}>
+          <Route path="/book/:slug" element={<BookingReviewPage />} />
+        </Route>
       </Route>
 
       <Route element={<AuthGuard />}>
         <Route path="/account" element={<AccountLayout />}>
           <Route index element={<AccountDashboardPage />} />
+          <Route path="bookings" element={<MyBookingsPage />} />
+          <Route path="bookings/:reference" element={<BookingConfirmationPage />} />
         </Route>
 
         <Route path="/dashboard" element={<DashboardLayout />}>
@@ -43,6 +54,14 @@ export function AppRouter() {
           <Route
             path="apartments/:id"
             element={<PermissionGuard permission="apartments.manage"><ApartmentFormPage /></PermissionGuard>}
+          />
+          <Route
+            path="reservations"
+            element={<PermissionGuard permission="bookings.view"><ReservationsIndexPage /></PermissionGuard>}
+          />
+          <Route
+            path="reservations/:reference"
+            element={<PermissionGuard permission="bookings.view"><ReservationDetailPage /></PermissionGuard>}
           />
         </Route>
       </Route>
