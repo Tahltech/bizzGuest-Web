@@ -1,85 +1,108 @@
 # BizzGuest
 
-Guest house / serviced apartment booking platform and property management system for Yaoundé, Cameroon. React + Vite frontend, Express backend, MariaDB, fully Dockerized.
+Guest house / serviced apartment booking platform and property management system for Yaoundé, Cameroon. React + Vite frontend, Express backend, MariaDB. Dockerized for later use; currently developed and run natively.
 
 The full architecture (ERD, RBAC, booking-concurrency strategy, payment/notification design, phased build plan) lives in the architecture document shared alongside this repo — this README covers day-to-day setup.
 
 ## Status
 
-Implemented so far (Phases 1–3 of the build plan):
+Implemented so far (Phases 1–7 of the build plan):
 
-- Docker Compose stack (frontend, backend, worker, MariaDB)
-- Full database schema (migrations) for every table in the architecture doc
+- Full database schema (migrations) for every table in the architecture doc, verified against real MariaDB
 - Seed data: roles, permissions, apartment types, amenities, expense categories, default settings
 - Auth: register, login, refresh (rotating sessions), logout, forgot/reset password
 - RBAC: roles/permissions resolved from the database, enforced by backend middleware — not just hidden UI
-- Campay payment provider adapter (mobile money) — wired, **waiting on your API keys**
-- Public site shell, guest account shell, staff dashboard shell, all permission-aware
+- Apartment catalog: CRUD, amenities, media upload (local storage adapter), pricing rules, blocked dates
+- Availability search implementing the overlap predicate from architecture §9
+- **Booking engine**: the row-lock + in-transaction re-check from architecture §10, verified with a real concurrent-request test — two simultaneous bookings for the same apartment/dates, exactly one succeeds
+- Full booking flow: search → apartment detail → review with live pricing → confirmation, guest "My Bookings", staff "Reservations"
+- Campay payment provider adapter (mobile money) — wired, **waiting on your API keys**; booking payment status stays `unpaid` until that's connected
+- Public site, guest account area, staff dashboard, all permission-aware
 
-Not yet built: apartment catalog CRUD, availability search, the booking flow itself, payments UI, housekeeping/maintenance, reports, notifications, reviews. These follow in the next phases.
+Not yet built: payment collection/webhook flow, check-in/check-out, housekeeping/maintenance, financial reports, notifications, email delivery, reviews. These follow in the next phases.
 
-## Requirements
+## Running it locally — no Docker required
 
-- Docker + Docker Compose
-- Node.js 20+ (only needed if you want to run something outside Docker)
+Docker Desktop isn't required for day-to-day development; the app runs natively against a local MariaDB instance. If you have **WAMP** installed (as this project's dev environment does), you already have a MariaDB binary you can reuse in an isolated data directory — see below. Otherwise install MariaDB/MySQL directly.
 
-## First-time setup
+### 1. Start a local MariaDB instance
 
-1. **Copy the environment file** and fill in the values marked `REPLACE_WITH_...`:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Generate the random secrets:
-
-   ```bash
-   openssl rand -base64 48   # JWT_ACCESS_SECRET, JWT_REFRESH_SECRET (use twice, two different values)
-   openssl rand -hex 32      # FIELD_ENCRYPTION_KEY
-   ```
-
-2. **Add your Campay credentials** (from your Campay dashboard → Apps) to `.env`:
-
-   ```
-   CAMPAY_APP_USERNAME=...
-   CAMPAY_APP_PASSWORD=...
-   CAMPAY_WEBHOOK_KEY=...
-   ```
-
-   Until these are set, the app runs fine — Campay-dependent payment calls will just fail loudly with "Campay is not configured" instead of pretending to succeed.
-
-3. **Add SMTP credentials** (any provider) so transactional email can send:
-
-   ```
-   SMTP_HOST=... SMTP_USER=... SMTP_PASSWORD=...
-   ```
-
-4. **Start everything:**
-
-   ```bash
-   docker compose up
-   ```
-
-   This builds the images, starts MariaDB, runs migrations, seeds reference data, and starts the API (`:4000`), worker, and frontend (`:5173`).
-
-5. **Create your Super Administrator account** (deliberately not seeded with a default password):
-
-   ```bash
-   docker compose exec backend sh -c \
-     "SUPER_ADMIN_EMAIL=you@example.com SUPER_ADMIN_PASSWORD='a-strong-password' SUPER_ADMIN_NAME='Your Name' npm run create-admin"
-   ```
-
-6. Visit `http://localhost:5173`, log in with that account, and you'll land in `/dashboard` with full permissions.
-
-## Everyday commands
+Using a WAMP install as the source of the `mariadbd`/`mysql` binaries (adjust the version path to what you have):
 
 ```bash
-docker compose up              # start the stack
-docker compose down             # stop it
-docker compose exec backend npm run migrate     # run new migrations manually
-docker compose exec backend npm run seed        # re-run seeds
-docker compose logs -f backend                  # tail API logs
+# One-time: initialize an isolated data directory (never touches your other DBs)
+"<wamp>\bin\mariadb\mariadb11.3.2\bin\mariadb-install-db.exe" \
+  --datadir="<project>\var\mariadb-data" --password="<root-password>" --port=3307 --default-user
+
+# Start it (repeat this each time you want to work on the project)
+"<wamp>\bin\mariadb\mariadb11.3.2\bin\mariadbd.exe" \
+  --datadir="<project>\var\mariadb-data" --port=3307 --bind-address=127.0.0.1
 ```
+
+Then create the app database/user once:
+
+```sql
+CREATE DATABASE bizzguest CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'bizzguest_app'@'127.0.0.1' IDENTIFIED BY '<app-password>';
+GRANT ALL PRIVILEGES ON bizzguest.* TO 'bizzguest_app'@'127.0.0.1';
+```
+
+### 2. Configure environment
+
+Copy `.env.example` to **both** `.env` (repo root) and `backend/.env` (Node's `dotenv` reads from the process's working directory, so the backend needs its own copy when run outside Docker). Point the DB block at your local instance:
+
+```
+DB_HOST=127.0.0.1
+DB_PORT_INTERNAL=3307
+DB_NAME=bizzguest
+DB_USER=bizzguest_app
+DB_PASSWORD=<app-password>
+```
+
+Pick a free port for the API if `4000` is already taken on your machine (check with `netstat -ano | grep :4000` first) — set `BACKEND_PORT_INTERNAL` and `API_URL` accordingly, and add a matching `frontend/.env` with `VITE_API_URL=http://localhost:<port>`.
+
+Generate the required secrets:
+
+```bash
+openssl rand -base64 48   # JWT_ACCESS_SECRET, JWT_REFRESH_SECRET (run twice, two different values)
+openssl rand -hex 32      # FIELD_ENCRYPTION_KEY
+```
+
+### 3. Install, migrate, seed
+
+```bash
+cd backend && npm install && npm run migrate && npm run seed
+cd ../frontend && npm install
+```
+
+### 4. Create your Super Administrator account
+
+```bash
+cd backend
+SUPER_ADMIN_EMAIL=you@example.com SUPER_ADMIN_PASSWORD='a-strong-password' SUPER_ADMIN_NAME='Your Name' npm run create-admin
+```
+
+### 5. Run it
+
+```bash
+cd backend && npm run dev      # API on http://localhost:<BACKEND_PORT_INTERNAL>
+cd frontend && npm run dev     # site on http://localhost:5173
+```
+
+Visit the frontend URL, log in with your admin account, and you'll land in `/dashboard` with full permissions.
+
+## Running it with Docker (once available)
+
+The Docker Compose setup (`docker-compose.yml`, both Dockerfiles) is complete and untouched — this is the intended path once Docker Desktop is available (e.g. after pulling this repo down on another machine):
+
+```bash
+cp .env.example .env       # fill in secrets as above; leave DB_HOST=db, ports at their defaults
+docker compose up --build
+docker compose exec backend sh -c \
+  "SUPER_ADMIN_EMAIL=you@example.com SUPER_ADMIN_PASSWORD='a-strong-password' SUPER_ADMIN_NAME='Your Name' npm run create-admin"
+```
+
+Frontend at `:5173`, API at `:4000`. `docker compose exec backend npm run migrate` / `npm run seed` to run those manually; `docker compose logs -f backend` to tail logs.
 
 ## Still needs your input
 
@@ -88,5 +111,9 @@ docker compose logs -f backend                  # tail API logs
 | `CAMPAY_APP_USERNAME` / `CAMPAY_APP_PASSWORD` | `.env` | Enables MTN MoMo / Orange Money collections via Campay |
 | `CAMPAY_WEBHOOK_KEY` | `.env` | Verifies that payment webhooks genuinely come from Campay |
 | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASSWORD` | `.env` | Enables booking/receipt/password-reset emails |
-| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` / `FIELD_ENCRYPTION_KEY` | `.env` | Random secrets you generate once, see step 1 |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` / `FIELD_ENCRYPTION_KEY` | `.env` | Random secrets you generate once |
 | `DB_PASSWORD` / `DB_ROOT_PASSWORD` | `.env` | Pick strong values before any real deployment |
+
+## Note on this dev machine
+
+`var/` (gitignored) holds a local-only MariaDB data directory used for native development — isolated from any other MySQL/MariaDB install on this machine, safe to delete and recreate at any time. `.env` and `backend/.env`/`frontend/.env` are also gitignored and contain machine-specific ports/secrets that won't carry over when you clone this repo elsewhere.
