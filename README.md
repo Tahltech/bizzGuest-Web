@@ -6,7 +6,7 @@ The full architecture (ERD, RBAC, booking-concurrency strategy, payment/notifica
 
 ## Status
 
-Implemented so far (Phases 1–7 of the build plan):
+Implemented so far (Phases 1–8 of the build plan):
 
 - Full database schema (migrations) for every table in the architecture doc, verified against real MariaDB
 - Seed data: roles, permissions, apartment types, amenities, expense categories, default settings
@@ -16,10 +16,11 @@ Implemented so far (Phases 1–7 of the build plan):
 - Availability search implementing the overlap predicate from architecture §9
 - **Booking engine**: the row-lock + in-transaction re-check from architecture §10, verified with a real concurrent-request test — two simultaneous bookings for the same apartment/dates, exactly one succeeds
 - Full booking flow: search → apartment detail → review with live pricing → confirmation, guest "My Bookings", staff "Reservations"
-- Campay payment provider adapter (mobile money) — wired, **waiting on your API keys**; booking payment status stays `unpaid` until that's connected
+- **Payments**: Campay mobile money collection, webhook confirmation, a polling fallback that confirms payments even before a public webhook URL is registered, manual cash/bank-transfer recording, and refunds — all verified end-to-end against the real database. **Waiting on your Campay API keys** to actually process real money; every code path fails gracefully with a clear message until then, never fakes success
+- Deep navy / warm cream / soft gold visual identity applied across the whole app
 - Public site, guest account area, staff dashboard, all permission-aware
 
-Not yet built: payment collection/webhook flow, check-in/check-out, housekeeping/maintenance, financial reports, notifications, email delivery, reviews. These follow in the next phases.
+Not yet built: check-in/check-out, housekeeping/maintenance, financial reports, notifications UI, email delivery (SMTP), reviews. These follow in the next phases.
 
 ## Running it locally — no Docker required
 
@@ -86,10 +87,11 @@ SUPER_ADMIN_EMAIL=you@example.com SUPER_ADMIN_PASSWORD='a-strong-password' SUPER
 
 ```bash
 cd backend && npm run dev      # API on http://localhost:<BACKEND_PORT_INTERNAL>
+cd backend && npm run worker   # background worker: emails, expired holds, Campay payment polling
 cd frontend && npm run dev     # site on http://localhost:5173
 ```
 
-Visit the frontend URL, log in with your admin account, and you'll land in `/dashboard` with full permissions.
+Visit the frontend URL, log in with your admin account, and you'll land in `/dashboard` with full permissions. The worker isn't optional once payments are in the picture — it's what confirms mobile money payments automatically if Campay's dashboard isn't (yet) pointed at a public webhook URL.
 
 ## Running it with Docker (once available)
 
@@ -108,8 +110,8 @@ Frontend at `:5173`, API at `:4000`. `docker compose exec backend npm run migrat
 
 | Item | Where | Why |
 |---|---|---|
-| `CAMPAY_APP_USERNAME` / `CAMPAY_APP_PASSWORD` | `.env` | Enables MTN MoMo / Orange Money collections via Campay |
-| `CAMPAY_WEBHOOK_KEY` | `.env` | Verifies that payment webhooks genuinely come from Campay |
+| `CAMPAY_APP_USERNAME` / `CAMPAY_APP_PASSWORD` | `.env` | Enables MTN MoMo / Orange Money collections via Campay. Until set, mobile money payment attempts fail with a clear "not set up yet" message instead of erroring |
+| `CAMPAY_WEBHOOK_KEY` | `.env` | Verifies that payment webhooks genuinely come from Campay. Not strictly required to test payments locally — the worker's polling fallback confirms them without it, useful since `localhost` can't receive real webhooks anyway |
 | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASSWORD` | `.env` | Enables booking/receipt/password-reset emails |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` / `FIELD_ENCRYPTION_KEY` | `.env` | Random secrets you generate once |
 | `DB_PASSWORD` / `DB_ROOT_PASSWORD` | `.env` | Pick strong values before any real deployment |
