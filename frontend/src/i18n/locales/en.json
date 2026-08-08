@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "apartments": "Apartments",
+    "login": "Log in",
+    "signup": "Sign up",
+    "bookNow": "Book Your Stay"
+  },
+  "home": {
+    "heroHeadline": "Your comfort. Your space. Your stay.",
+    "heroSub": "Book beautifully maintained guest house rooms and serviced apartments in Yaoundé — real-time availability, secure payment, instant confirmation.",
+    "ctaBook": "Book Your Stay",
+    "ctaExplore": "Explore Apartments",
+    "whyTitle": "Why BizzGuest",
+    "why1Title": "Real-time availability",
+    "why1Body": "See exactly what's free for your dates — no back-and-forth, no double bookings.",
+    "why2Title": "Secure payment",
+    "why2Body": "Pay by MTN Mobile Money or Orange Money with confirmation you can trust.",
+    "why3Title": "Instant confirmation",
+    "why3Body": "Your booking reference and receipt land in your inbox the moment payment clears."
+  },
+  "auth": {
+    "loginTitle": "Welcome back",
+    "loginSub": "Sign in to manage your bookings.",
+    "registerTitle": "Create your account",
+    "registerSub": "Book your stay in a couple of minutes.",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "submitLogin": "Log in",
+    "submitRegister": "Create account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  }
+}

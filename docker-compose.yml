@@ -1,0 +1,86 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: bizzguest_db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - bizzguest_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      target: ${BUILD_TARGET:-development}
+    container_name: bizzguest_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT_INTERNAL: 3306
+    ports:
+      - "${BACKEND_PORT}:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - bizzguest_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx knex migrate:latest && npx knex seed:run && npm run dev"
+
+  worker:
+    build:
+      context: ./backend
+      target: ${BUILD_TARGET:-development}
+    container_name: bizzguest_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT_INTERNAL: 3306
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - bizzguest_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    command: npm run worker
+
+  frontend:
+    build:
+      context: ./frontend
+      target: ${BUILD_TARGET:-development}
+    container_name: bizzguest_frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${API_URL}
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  bizzguest_db_data:
+  bizzguest_uploads:
