@@ -25,7 +25,7 @@ export function BookingDetail({ backTo, backLabel, showGuestContact = false }) {
   });
 
   if (isLoading || !booking) {
-    return <div className="h-64 animate-pulse rounded-card bg-stone-line/40" />;
+    return <div className="h-64 animate-pulse rounded-card bg-cream-line/40" />;
   }
 
   function onCancel() {
@@ -53,7 +53,7 @@ export function BookingDetail({ backTo, backLabel, showGuestContact = false }) {
         </div>
 
         {booking.status === 'pending' && (
-          <div className="mt-4 rounded-md bg-brass/10 p-4 text-sm text-brass-dark">
+          <div className="mt-4 rounded-md bg-gold/10 p-4 text-sm text-gold-dark">
             This reservation is held while online payment is being wired up. BizzGuest will follow up to confirm payment and lock in the dates — the hold does not expire the reservation record itself.
           </div>
         )}
@@ -65,11 +65,11 @@ export function BookingDetail({ backTo, backLabel, showGuestContact = false }) {
           <div className="flex justify-between sm:block"><span className="text-ink-soft">Guests</span><span className="sm:block sm:font-medium">{booking.guestsCount}</span></div>
         </div>
 
-        <div className="mt-6 space-y-1 border-t border-stone-line pt-4 text-sm">
+        <div className="mt-6 space-y-1 border-t border-cream-line pt-4 text-sm">
           <div className="flex justify-between"><span className="text-ink-soft">Room subtotal</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.roomSubtotalMinor)}</span></div>
           {booking.pricing.discountMinor > 0 && <div className="flex justify-between"><span className="text-ink-soft">Discount</span><span className="font-mono tabular-nums">-{formatXAF(booking.pricing.discountMinor)}</span></div>}
           {booking.pricing.taxMinor > 0 && <div className="flex justify-between"><span className="text-ink-soft">Tax</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.taxMinor)}</span></div>}
-          <div className="flex justify-between border-t border-stone-line pt-2 text-base font-medium"><span>Total</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.totalMinor)}</span></div>
+          <div className="flex justify-between border-t border-cream-line pt-2 text-base font-medium"><span>Total</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.totalMinor)}</span></div>
           <div className="flex justify-between text-ink-soft"><span>Paid so far</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.paidMinor)}</span></div>
           <div className="flex justify-between font-medium"><span>Balance due</span><span className="font-mono tabular-nums">{formatXAF(booking.pricing.balanceMinor)}</span></div>
         </div>

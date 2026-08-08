@@ -50,7 +50,7 @@ export function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        {t('auth.noAccount')} <Link to="/register" className="text-brass hover:underline">{t('nav.signup')}</Link>
+        {t('auth.noAccount')} <Link to="/register" className="text-gold-dark hover:underline">{t('nav.signup')}</Link>
       </p>
     </div>
   );

@@ -5,8 +5,8 @@ export function ApartmentCard({ apartment, searchParams }) {
   const detailHref = searchParams ? `/apartments/${apartment.slug}?${searchParams}` : `/apartments/${apartment.slug}`;
 
   return (
-    <Link to={detailHref} className="card group flex flex-col overflow-hidden transition hover:shadow-md">
-      <div className="aspect-[4/3] w-full overflow-hidden bg-stone-line">
+    <Link to={detailHref} className="card group flex flex-col overflow-hidden transition hover:border-gold/50 hover:shadow-lg">
+      <div className="aspect-[4/3] w-full overflow-hidden bg-cream-line">
         {apartment.featuredMedia ? (
           <img
             src={apartment.featuredMedia.url}

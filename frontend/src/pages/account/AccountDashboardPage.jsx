@@ -27,7 +27,7 @@ export function AccountDashboardPage() {
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="card p-6">
           <h2 className="mb-1 text-sm uppercase tracking-wide text-ink-soft">Upcoming reservation</h2>
-          {isLoading && <div className="mt-3 h-16 animate-pulse rounded-md bg-stone-line/40" />}
+          {isLoading && <div className="mt-3 h-16 animate-pulse rounded-md bg-cream-line/40" />}
           {!isLoading && !upcoming && <p className="mt-3 text-sm text-ink-soft">You have no upcoming reservations yet.</p>}
           {upcoming && (
             <Link to={`/account/bookings/${upcoming.reference}`} className="mt-3 block">
@@ -39,13 +39,13 @@ export function AccountDashboardPage() {
         </div>
         <div className="card p-6">
           <h2 className="mb-1 text-sm uppercase tracking-wide text-ink-soft">Outstanding payment</h2>
-          {isLoading && <div className="mt-3 h-16 animate-pulse rounded-md bg-stone-line/40" />}
+          {isLoading && <div className="mt-3 h-16 animate-pulse rounded-md bg-cream-line/40" />}
           {!isLoading && outstanding.length === 0 && <p className="mt-3 text-sm text-ink-soft">Nothing outstanding.</p>}
           {outstanding.length > 0 && (
             <ul className="mt-3 space-y-2">
               {outstanding.map((b) => (
                 <li key={b.id}>
-                  <Link to={`/account/bookings/${b.reference}`} className="flex justify-between text-sm hover:text-brass">
+                  <Link to={`/account/bookings/${b.reference}`} className="flex justify-between text-sm hover:text-gold-dark">
                     <span>{b.apartment.name}</span>
                     <span className="font-mono tabular-nums">{formatXAF(b.pricing.balanceMinor)}</span>
                   </Link>

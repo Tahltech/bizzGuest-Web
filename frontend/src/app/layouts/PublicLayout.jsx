@@ -8,20 +8,30 @@ export function PublicLayout() {
   const { user } = useAuth();
 
   return (
-    <div className="flex min-h-screen flex-col bg-stone">
-      <header className="sticky top-0 z-20 border-b border-stone-line bg-stone/90 backdrop-blur">
+    <div className="flex min-h-screen flex-col bg-cream">
+      <header className="sticky top-0 z-20 bg-navy shadow-[0_1px_0_rgba(201,164,92,.25)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/"><Logo /></Link>
-          <nav className="hidden items-center gap-8 text-sm text-ink-soft md:flex">
-            <Link to="/apartments" className="hover:text-ink">{t('nav.apartments')}</Link>
+          <Link to="/"><Logo variant="light" /></Link>
+          <nav className="hidden items-center gap-8 text-sm text-cream/75 md:flex">
+            <Link to="/apartments" className="transition hover:text-gold">{t('nav.apartments')}</Link>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {user ? (
-              <Link to="/account" className="btn-secondary !px-4 !py-2">Account</Link>
+              <Link
+                to="/account"
+                className="inline-flex items-center justify-center rounded-card border border-cream/25 px-4 py-2 text-sm font-medium text-cream transition hover:border-gold hover:text-gold"
+              >
+                Account
+              </Link>
             ) : (
               <>
-                <Link to="/login" className="text-sm text-ink-soft hover:text-ink">{t('nav.login')}</Link>
-                <Link to="/register" className="btn-primary !px-4 !py-2">{t('nav.signup')}</Link>
+                <Link to="/login" className="text-sm text-cream/75 transition hover:text-gold">{t('nav.login')}</Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center rounded-card bg-gold px-4 py-2 text-sm font-medium text-navy transition hover:bg-gold-light"
+                >
+                  {t('nav.signup')}
+                </Link>
               </>
             )}
           </div>
@@ -32,30 +42,30 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-stone-line bg-ink text-stone">
+      <footer className="bg-navy text-cream">
         <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-4">
           <div>
             <Logo variant="light" />
-            <p className="mt-3 text-sm text-stone/70">Comfortable serviced apartments and guest house rooms in Yaoundé.</p>
+            <p className="mt-3 text-sm text-cream/60">Comfortable serviced apartments and guest house rooms in Yaoundé.</p>
           </div>
           <div>
-            <h4 className="mb-3 text-xs uppercase tracking-wide text-stone/50">Explore</h4>
-            <ul className="space-y-2 text-sm text-stone/80">
-              <li><Link to="/apartments" className="hover:text-white">Apartments</Link></li>
-              <li><Link to="/login" className="hover:text-white">Booking</Link></li>
+            <h4 className="mb-3 text-xs uppercase tracking-wide text-gold/70">Explore</h4>
+            <ul className="space-y-2 text-sm text-cream/75">
+              <li><Link to="/apartments" className="transition hover:text-gold">Apartments</Link></li>
+              <li><Link to="/login" className="transition hover:text-gold">Booking</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-xs uppercase tracking-wide text-stone/50">Policies</h4>
-            <ul className="space-y-2 text-sm text-stone/80">
-              <li><Link to="/terms" className="hover:text-white">Terms</Link></li>
-              <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
-              <li><Link to="/cancellation-policy" className="hover:text-white">Cancellation Policy</Link></li>
+            <h4 className="mb-3 text-xs uppercase tracking-wide text-gold/70">Policies</h4>
+            <ul className="space-y-2 text-sm text-cream/75">
+              <li><Link to="/terms" className="transition hover:text-gold">Terms</Link></li>
+              <li><Link to="/privacy" className="transition hover:text-gold">Privacy Policy</Link></li>
+              <li><Link to="/cancellation-policy" className="transition hover:text-gold">Cancellation Policy</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-xs uppercase tracking-wide text-stone/50">Contact</h4>
-            <ul className="space-y-2 text-sm text-stone/80">
+            <h4 className="mb-3 text-xs uppercase tracking-wide text-gold/70">Contact</h4>
+            <ul className="space-y-2 text-sm text-cream/75">
               <li>Yaoundé, Cameroon</li>
             </ul>
           </div>

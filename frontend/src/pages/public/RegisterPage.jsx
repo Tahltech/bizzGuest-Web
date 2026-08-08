@@ -59,7 +59,7 @@ export function RegisterPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-soft">
-        {t('auth.haveAccount')} <Link to="/login" className="text-brass hover:underline">{t('nav.login')}</Link>
+        {t('auth.haveAccount')} <Link to="/login" className="text-gold-dark hover:underline">{t('nav.login')}</Link>
       </p>
     </div>
   );

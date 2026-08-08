@@ -7,8 +7,8 @@ import { useAuth } from '../../../context/AuthContext.jsx';
 const STATUS_STYLES = {
   available: 'bg-status-good/15 text-status-good',
   reserved: 'bg-status-warn/15 text-status-warn',
-  occupied: 'bg-forest/15 text-forest',
-  cleaning: 'bg-brass/15 text-brass-dark',
+  occupied: 'bg-navy/15 text-navy',
+  cleaning: 'bg-gold/20 text-gold-dark',
   maintenance: 'bg-status-danger/15 text-status-danger',
   out_of_service: 'bg-ink-soft/15 text-ink-soft'
 };
@@ -31,10 +31,10 @@ export function ApartmentsIndexPage() {
         {canManage && <Link to="/dashboard/apartments/new" className="btn-primary">New apartment</Link>}
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-card border border-stone-line bg-white">
+      <div className="mt-6 overflow-x-auto rounded-card border border-cream-line bg-white">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
-            <tr className="border-b border-stone-line text-left text-xs uppercase tracking-wide text-ink-soft">
+            <tr className="border-b border-cream-line text-left text-xs uppercase tracking-wide text-ink-soft">
               <th className="px-4 py-3">Code</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Type</th>
@@ -52,7 +52,7 @@ export function ApartmentsIndexPage() {
               <tr><td colSpan={7} className="px-4 py-8 text-center text-ink-soft">No apartments yet. Create the first one to get started.</td></tr>
             )}
             {apartments.map((apt) => (
-              <tr key={apt.id} className="border-b border-stone-line last:border-0 hover:bg-stone/50">
+              <tr key={apt.id} className="border-b border-cream-line last:border-0 hover:bg-cream/60">
                 <td className="px-4 py-3 font-mono text-xs">{apt.code}</td>
                 <td className="px-4 py-3">{apt.name}</td>
                 <td className="px-4 py-3 text-ink-soft">{apt.apartmentType?.name}</td>
@@ -62,7 +62,7 @@ export function ApartmentsIndexPage() {
                 </td>
                 <td className="px-4 py-3 text-ink-soft">{apt.isActive ? 'Yes' : 'No'}</td>
                 <td className="px-4 py-3 text-right">
-                  {canManage && <Link to={`/dashboard/apartments/${apt.id}`} className="text-brass hover:underline">Edit</Link>}
+                  {canManage && <Link to={`/dashboard/apartments/${apt.id}`} className="text-gold-dark hover:underline">Edit</Link>}
                 </td>
               </tr>
             ))}

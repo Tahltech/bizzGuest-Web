@@ -51,7 +51,7 @@ export function ApartmentListPage() {
         {isLoading && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="card h-80 animate-pulse bg-stone-line/40" />
+              <div key={i} className="card h-80 animate-pulse bg-cream-line/40" />
             ))}
           </div>
         )}

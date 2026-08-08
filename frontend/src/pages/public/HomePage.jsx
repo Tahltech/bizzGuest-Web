@@ -12,11 +12,11 @@ export function HomePage() {
 
   return (
     <div>
-      <section className="bg-ink pb-20 pt-24 text-stone md:pb-28 md:pt-32">
+      <section className="bg-navy pb-20 pt-24 text-cream md:pb-28 md:pt-32">
         <div className="mx-auto max-w-6xl px-6">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-brass-light">Yaoundé, Cameroon</p>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-gold">Yaoundé, Cameroon</p>
           <h1 className="max-w-2xl text-4xl leading-tight md:text-6xl">{t('home.heroHeadline')}</h1>
-          <p className="mt-6 max-w-xl text-lg text-stone/75">{t('home.heroSub')}</p>
+          <p className="mt-6 max-w-xl text-lg text-cream/75">{t('home.heroSub')}</p>
         </div>
       </section>
 
@@ -29,6 +29,7 @@ export function HomePage() {
         <div className="grid gap-6 md:grid-cols-3">
           {whyItems.map((item) => (
             <div key={item.title} className="card p-6">
+              <span className="mb-3 block h-0.5 w-8 bg-gold" />
               <h3 className="mb-2 text-xl">{item.title}</h3>
               <p className="text-sm text-ink-soft">{item.body}</p>
             </div>

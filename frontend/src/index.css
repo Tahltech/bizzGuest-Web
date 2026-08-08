@@ -7,24 +7,24 @@
     @apply font-serif font-normal;
   }
   ::selection {
-    @apply bg-brass text-white;
+    @apply bg-gold text-navy;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-card bg-brass px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brass-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass;
+    @apply inline-flex items-center justify-center gap-2 rounded-card bg-navy px-5 py-2.5 text-sm font-medium text-cream transition hover:bg-navy-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-card border border-forest px-5 py-2.5 text-sm font-medium text-forest transition hover:bg-forest hover:text-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-card border border-navy px-5 py-2.5 text-sm font-medium text-navy transition hover:bg-navy hover:text-cream;
   }
   .input {
-    @apply w-full rounded-md border border-stone-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:border-brass focus:outline-none focus:ring-1 focus:ring-brass;
+    @apply w-full rounded-md border border-cream-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-navy focus:outline-none focus:ring-1 focus:ring-gold;
   }
   .label {
     @apply mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft;
   }
   .card {
-    @apply rounded-card border border-stone-line bg-white shadow-sm;
+    @apply rounded-card border border-cream-line bg-white shadow-card;
   }
 }

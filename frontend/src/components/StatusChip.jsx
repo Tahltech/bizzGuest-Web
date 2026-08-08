@@ -2,7 +2,7 @@ const BOOKING_STATUS_STYLES = {
   pending: 'bg-status-warn/15 text-status-warn',
   awaiting_payment: 'bg-status-warn/15 text-status-warn',
   confirmed: 'bg-status-good/15 text-status-good',
-  checked_in: 'bg-forest/15 text-forest',
+  checked_in: 'bg-navy/10 text-navy',
   checked_out: 'bg-ink-soft/15 text-ink-soft',
   cancelled: 'bg-status-danger/15 text-status-danger',
   no_show: 'bg-status-danger/15 text-status-danger',

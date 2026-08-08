@@ -16,7 +16,7 @@ export function MyBookingsPage() {
     <div>
       <h1 className="text-2xl">My bookings</h1>
 
-      {isLoading && <div className="mt-6 h-40 animate-pulse rounded-card bg-stone-line/40" />}
+      {isLoading && <div className="mt-6 h-40 animate-pulse rounded-card bg-cream-line/40" />}
 
       {!isLoading && bookings.length === 0 && (
         <div className="card mt-6 flex flex-col items-center gap-2 p-16 text-center">

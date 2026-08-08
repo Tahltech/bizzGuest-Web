@@ -33,17 +33,17 @@ export function ReservationsIndexPage() {
           <button
             key={f.value}
             onClick={() => setStatus(f.value)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition ${status === f.value ? 'bg-forest text-white' : 'bg-white text-ink-soft hover:bg-stone-line/50'}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition ${status === f.value ? 'bg-navy text-cream' : 'bg-white text-ink-soft hover:bg-cream-line/50'}`}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-card border border-stone-line bg-white">
+      <div className="mt-6 overflow-x-auto rounded-card border border-cream-line bg-white">
         <table className="w-full min-w-[800px] text-sm">
           <thead>
-            <tr className="border-b border-stone-line text-left text-xs uppercase tracking-wide text-ink-soft">
+            <tr className="border-b border-cream-line text-left text-xs uppercase tracking-wide text-ink-soft">
               <th className="px-4 py-3">Reference</th>
               <th className="px-4 py-3">Guest</th>
               <th className="px-4 py-3">Apartment</th>
@@ -59,9 +59,9 @@ export function ReservationsIndexPage() {
               <tr><td colSpan={7} className="px-4 py-8 text-center text-ink-soft">No reservations match this filter.</td></tr>
             )}
             {bookings.map((b) => (
-              <tr key={b.id} className="border-b border-stone-line last:border-0 hover:bg-stone/50">
+              <tr key={b.id} className="border-b border-cream-line last:border-0 hover:bg-cream/60">
                 <td className="px-4 py-3">
-                  <Link to={`/dashboard/reservations/${b.reference}`} className="font-mono text-xs text-brass hover:underline">{b.reference}</Link>
+                  <Link to={`/dashboard/reservations/${b.reference}`} className="font-mono text-xs text-gold-dark hover:underline">{b.reference}</Link>
                 </td>
                 <td className="px-4 py-3">{b.guest?.name}</td>
                 <td className="px-4 py-3 text-ink-soft">{b.apartment?.name}</td>

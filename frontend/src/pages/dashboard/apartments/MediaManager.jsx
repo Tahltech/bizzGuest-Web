@@ -53,7 +53,7 @@ export function MediaManager({ apartmentId, media }) {
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {media.map((m) => (
-            <div key={m.id} className={`relative overflow-hidden rounded-md border-2 ${m.isFeatured ? 'border-brass' : 'border-transparent'}`}>
+            <div key={m.id} className={`relative overflow-hidden rounded-md border-2 ${m.isFeatured ? 'border-gold' : 'border-transparent'}`}>
               {m.type === 'image' ? (
                 <img src={m.url} alt="" className="aspect-square w-full object-cover" />
               ) : (
@@ -65,7 +65,7 @@ export function MediaManager({ apartmentId, media }) {
                     Set cover
                   </button>
                 )}
-                {m.isFeatured && <span className="rounded bg-brass px-2 py-0.5 text-[11px] text-white">Cover</span>}
+                {m.isFeatured && <span className="rounded bg-gold px-2 py-0.5 text-[11px] text-navy">Cover</span>}
                 <button type="button" onClick={() => deleteMutation.mutate(m.id)} className="rounded bg-white/90 px-2 py-0.5 text-[11px] text-status-danger hover:bg-white">
                   Remove
                 </button>

@@ -168,7 +168,7 @@ export function ApartmentFormPage() {
       </form>
 
       {isEditing && apartment && (
-        <div className="mt-10 border-t border-stone-line pt-8">
+        <div className="mt-10 border-t border-cream-line pt-8">
           <MediaManager apartmentId={id} media={apartment.media || []} />
         </div>
       )}

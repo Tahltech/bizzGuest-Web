@@ -55,7 +55,7 @@ export function BookingReviewPage() {
   }
 
   if (isLoading || !apartment) {
-    return <div className="mx-auto max-w-xl px-6 py-16"><div className="h-64 animate-pulse rounded-card bg-stone-line/40" /></div>;
+    return <div className="mx-auto max-w-xl px-6 py-16"><div className="h-64 animate-pulse rounded-card bg-cream-line/40" /></div>;
   }
 
   const nights = Math.max(1, Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000));
@@ -70,16 +70,16 @@ export function BookingReviewPage() {
         <p className="text-xs uppercase tracking-wide text-ink-soft">{apartment.apartmentType?.name}</p>
         <h2 className="mt-1 text-xl">{apartment.name}</h2>
 
-        <div className="mt-4 space-y-2 border-t border-stone-line pt-4 text-sm">
+        <div className="mt-4 space-y-2 border-t border-cream-line pt-4 text-sm">
           <div className="flex justify-between text-ink-soft"><span>Check-in</span><span>{formatDate(checkIn)}</span></div>
           <div className="flex justify-between text-ink-soft"><span>Check-out</span><span>{formatDate(checkOut)}</span></div>
           <div className="flex justify-between text-ink-soft"><span>Nights</span><span>{nights}</span></div>
           <div className="flex justify-between text-ink-soft"><span>Guests</span><span>{guestsCount}</span></div>
         </div>
 
-        <div className="mt-4 space-y-1 border-t border-stone-line pt-4 text-sm">
+        <div className="mt-4 space-y-1 border-t border-cream-line pt-4 text-sm">
           <div className="flex justify-between"><span>Room ({nights} night{nights > 1 ? 's' : ''})</span><span className="font-mono tabular-nums">{formatXAF(estimatedTotal)}</span></div>
-          <div className="mt-2 flex justify-between border-t border-stone-line pt-2 text-base font-medium"><span>Estimated total</span><span className="font-mono tabular-nums">{formatXAF(estimatedTotal)}</span></div>
+          <div className="mt-2 flex justify-between border-t border-cream-line pt-2 text-base font-medium"><span>Estimated total</span><span className="font-mono tabular-nums">{formatXAF(estimatedTotal)}</span></div>
           <p className="text-xs text-ink-soft">Taxes, discounts, and fees (if any) are finalized when your reservation is created.</p>
         </div>
       </div>

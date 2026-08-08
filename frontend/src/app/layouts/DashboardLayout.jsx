@@ -19,8 +19,8 @@ const NAV_ITEMS = [
 ];
 
 function navLinkClass({ isActive }) {
-  return `block rounded-md px-3 py-2 text-sm transition ${
-    isActive ? 'bg-forest text-white' : 'text-stone/80 hover:bg-white/5 hover:text-white'
+  return `block rounded-md border-l-2 px-3 py-2 text-sm transition ${
+    isActive ? 'border-gold bg-white/[.06] text-gold' : 'border-transparent text-cream/70 hover:bg-white/5 hover:text-cream'
   }`;
 }
 
@@ -28,8 +28,8 @@ export function DashboardLayout() {
   const { user, hasPermission, logout } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-stone">
-      <aside className="flex w-64 flex-shrink-0 flex-col bg-ink px-4 py-6">
+    <div className="flex min-h-screen bg-cream">
+      <aside className="flex w-64 flex-shrink-0 flex-col bg-navy px-4 py-6">
         <div className="mb-8 px-2"><Logo variant="light" /></div>
         <nav className="flex-1 space-y-1">
           {NAV_ITEMS.filter((item) => !item.permission || hasPermission(item.permission)).map((item) => (
@@ -39,8 +39,8 @@ export function DashboardLayout() {
           ))}
         </nav>
         <div className="mt-6 border-t border-white/10 pt-4">
-          <p className="px-2 text-xs text-stone/50">{user?.email}</p>
-          <button onClick={logout} className="mt-2 w-full rounded-md px-3 py-2 text-left text-sm text-stone/80 hover:bg-white/5 hover:text-white">
+          <p className="px-2 text-xs text-cream/50">{user?.email}</p>
+          <button onClick={logout} className="mt-2 w-full rounded-md px-3 py-2 text-left text-sm text-cream/70 hover:bg-white/5 hover:text-cream">
             Logout
           </button>
         </div>

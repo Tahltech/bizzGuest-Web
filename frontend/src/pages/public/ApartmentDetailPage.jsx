@@ -24,7 +24,7 @@ export function ApartmentDetailPage() {
   });
 
   if (isLoading) {
-    return <div className="mx-auto max-w-6xl px-6 py-16"><div className="h-96 animate-pulse rounded-card bg-stone-line/40" /></div>;
+    return <div className="mx-auto max-w-6xl px-6 py-16"><div className="h-96 animate-pulse rounded-card bg-cream-line/40" /></div>;
   }
 
   if (isError || !apartment) {
@@ -46,7 +46,7 @@ export function ApartmentDetailPage() {
 
       <div className="mt-4 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <div>
-          <div className="aspect-[4/3] w-full overflow-hidden rounded-card bg-stone-line">
+          <div className="aspect-[4/3] w-full overflow-hidden rounded-card bg-cream-line">
             {activeMedia ? (
               activeMedia.type === 'video' ? (
                 <video src={activeMedia.url} controls className="h-full w-full object-cover" />
@@ -63,7 +63,7 @@ export function ApartmentDetailPage() {
                 <button
                   key={m.id}
                   onClick={() => setActiveMediaIndex(i)}
-                  className={`flex aspect-square items-center justify-center overflow-hidden rounded-md border-2 bg-stone-line ${i === activeMediaIndex ? 'border-brass' : 'border-transparent'}`}
+                  className={`flex aspect-square items-center justify-center overflow-hidden rounded-md border-2 bg-cream-line ${i === activeMediaIndex ? 'border-gold' : 'border-transparent'}`}
                 >
                   {m.type === 'image' ? (
                     <img src={m.url} alt="" className="h-full w-full object-cover" />
@@ -102,7 +102,7 @@ export function ApartmentDetailPage() {
             <span className="text-sm text-ink-soft">/ night</span>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-stone-line pt-4">
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-cream-line pt-4">
             <div>
               <label className="label" htmlFor="detailCheckIn">Check-in</label>
               <input id="detailCheckIn" type="date" min={todayISO()} className="input" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
@@ -118,7 +118,7 @@ export function ApartmentDetailPage() {
           </div>
 
           {nights && (
-            <div className="mt-4 space-y-2 border-t border-stone-line pt-4 text-sm">
+            <div className="mt-4 space-y-2 border-t border-cream-line pt-4 text-sm">
               <div className="flex justify-between text-ink-soft"><span>{formatDate(checkIn)} — {formatDate(checkOut)}</span><span>{nights} night{nights > 1 ? 's' : ''}</span></div>
               <div className="flex justify-between font-medium"><span>Estimated total</span><span className="font-mono tabular-nums">{formatXAF(apartment.pricing?.nightMinor * nights)}</span></div>
               <p className="text-xs text-ink-soft">Final price is confirmed on the next step.</p>

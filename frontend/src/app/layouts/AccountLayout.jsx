@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 
 function navLinkClass({ isActive }) {
   return `block rounded-md px-3 py-2 text-sm transition ${
-    isActive ? 'bg-brass text-white' : 'text-ink-soft hover:bg-stone-line/50 hover:text-ink'
+    isActive ? 'bg-navy text-cream' : 'text-ink-soft hover:bg-cream-muted hover:text-ink'
   }`;
 }
 
@@ -21,8 +21,8 @@ export function AccountLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-stone">
-      <header className="border-b border-stone-line bg-white">
+    <div className="min-h-screen bg-cream">
+      <header className="border-b border-cream-line bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link to="/"><Logo /></Link>
           <span className="text-sm text-ink-soft">{user?.fullName}</span>
@@ -37,7 +37,7 @@ export function AccountLayout() {
               </NavLink>
             ))}
           </nav>
-          <button onClick={logout} className="mt-4 w-full rounded-md px-3 py-2 text-left text-sm text-ink-soft hover:bg-stone-line/50 hover:text-ink">
+          <button onClick={logout} className="mt-4 w-full rounded-md px-3 py-2 text-left text-sm text-ink-soft hover:bg-cream-muted hover:text-ink">
             Logout
           </button>
         </aside>
