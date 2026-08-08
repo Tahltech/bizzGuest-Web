@@ -11,7 +11,11 @@ export const generalRateLimiter = rateLimit({
   max: env.rateLimit.max,
   standardHeaders: true,
   legacyHeaders: false,
-  handler: limiterResponse
+  handler: limiterResponse,
+  // Payment webhooks are authenticated by signature, not by client IP volume
+  // — see architecture §15. A burst of legitimate provider callbacks must
+  // never get throttled.
+  skip: (req) => req.path.startsWith('/api/v1/payments/webhook/')
 });
 
 export const authRateLimiter = rateLimit({

@@ -9,6 +9,11 @@ function required(name, fallback) {
   return value;
 }
 
+/** True only for a real value — filters out unset vars and the `.env.example` placeholders (e.g. `REPLACE_WITH_...`) so a freshly-copied .env doesn't get mistaken for real credentials. */
+function isRealValue(value) {
+  return Boolean(value) && !value.startsWith('REPLACE_WITH');
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isProduction: process.env.NODE_ENV === 'production',
@@ -53,7 +58,8 @@ export const env = {
     appUsername: process.env.CAMPAY_APP_USERNAME || '',
     appPassword: process.env.CAMPAY_APP_PASSWORD || '',
     webhookKey: process.env.CAMPAY_WEBHOOK_KEY || '',
-    isConfigured: Boolean(process.env.CAMPAY_APP_USERNAME && process.env.CAMPAY_APP_PASSWORD)
+    isConfigured: isRealValue(process.env.CAMPAY_APP_USERNAME) && isRealValue(process.env.CAMPAY_APP_PASSWORD),
+    isWebhookConfigured: isRealValue(process.env.CAMPAY_WEBHOOK_KEY)
   },
 
   // >>> Requires your SMTP credentials — see .env.example <<<
@@ -65,6 +71,6 @@ export const env = {
     password: process.env.SMTP_PASSWORD || '',
     fromName: process.env.MAIL_FROM_NAME || 'BizzGuest',
     fromAddress: process.env.MAIL_FROM_ADDRESS || 'no-reply@bizzguest.example',
-    isConfigured: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER)
+    isConfigured: isRealValue(process.env.SMTP_HOST) && isRealValue(process.env.SMTP_USER)
   }
 };

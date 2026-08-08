@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '../api/bookings.js';
 import { extractErrorMessage } from '../api/client.js';
 import { StatusChip } from './StatusChip.jsx';
+import { PaymentsPanel } from './PaymentsPanel.jsx';
 import { formatXAF, formatDate } from '../utils/formatCurrency.js';
 
 const CANCELLABLE = ['pending', 'awaiting_payment', 'confirmed'];
@@ -52,12 +53,6 @@ export function BookingDetail({ backTo, backLabel, showGuestContact = false }) {
           </div>
         </div>
 
-        {booking.status === 'pending' && (
-          <div className="mt-4 rounded-md bg-gold/10 p-4 text-sm text-gold-dark">
-            This reservation is held while online payment is being wired up. BizzGuest will follow up to confirm payment and lock in the dates — the hold does not expire the reservation record itself.
-          </div>
-        )}
-
         <div className="mt-6 grid gap-2 text-sm sm:grid-cols-2">
           <div className="flex justify-between sm:block"><span className="text-ink-soft">Check-in</span><span className="sm:block sm:font-medium">{formatDate(booking.checkIn)}</span></div>
           <div className="flex justify-between sm:block"><span className="text-ink-soft">Check-out</span><span className="sm:block sm:font-medium">{formatDate(booking.checkOut)}</span></div>
@@ -86,6 +81,8 @@ export function BookingDetail({ backTo, backLabel, showGuestContact = false }) {
           </button>
         )}
       </div>
+
+      <PaymentsPanel booking={booking} />
     </div>
   );
 }

@@ -96,12 +96,18 @@ function mapCampayStatus(rawStatus) {
  * this defaults to checking a `x-campay-webhook-key` header.
  */
 export function verifyWebhookSignature(req) {
-  if (!env.campay.webhookKey) {
+  if (!env.campay.isWebhookConfigured) {
     throw new Error('CAMPAY_WEBHOOK_KEY is not set — cannot verify webhook authenticity.');
   }
   const provided = req.headers['x-campay-webhook-key'] || req.query.key;
   if (!provided) return false;
-  return crypto.timingSafeEqual(Buffer.from(String(provided)), Buffer.from(env.campay.webhookKey));
+
+  const providedBuf = Buffer.from(String(provided));
+  const expectedBuf = Buffer.from(env.campay.webhookKey);
+  // timingSafeEqual throws on unequal-length buffers rather than returning
+  // false — an attacker-controlled length must never crash the endpoint.
+  if (providedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(providedBuf, expectedBuf);
 }
 
 export function parseWebhookEvent(payload) {
