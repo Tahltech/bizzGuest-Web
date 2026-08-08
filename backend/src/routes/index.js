@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import { router as authRouter } from '../modules/auth/routes.js';
+import { router as apartmentsRouter } from '../modules/apartments/routes.js';
+import { router as availabilityRouter } from '../modules/availability/routes.js';
+import { apartmentTypesRouter, amenitiesRouter } from '../modules/catalog/routes.js';
 
 export const router = Router();
 
 router.use('/auth', authRouter);
+router.use('/apartments', apartmentsRouter);
+router.use('/availability', availabilityRouter);
+router.use('/apartment-types', apartmentTypesRouter);
+router.use('/amenities', amenitiesRouter);
 
 // Mounted as each module is built (see architecture §18 phases):
-// router.use('/apartments', apartmentsRouter);
-// router.use('/availability', availabilityRouter);
 // router.use('/bookings', bookingsRouter);
 // router.use('/payments', paymentsRouter);
 // router.use('/guests', guestsRouter);

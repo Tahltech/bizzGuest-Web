@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SearchWidget } from '../../components/SearchWidget.jsx';
 
 export function HomePage() {
   const { t } = useTranslation();
@@ -12,19 +12,17 @@ export function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-stone-line bg-ink text-stone">
-        <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+      <section className="bg-ink pb-20 pt-24 text-stone md:pb-28 md:pt-32">
+        <div className="mx-auto max-w-6xl px-6">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-brass-light">Yaoundé, Cameroon</p>
           <h1 className="max-w-2xl text-4xl leading-tight md:text-6xl">{t('home.heroHeadline')}</h1>
           <p className="mt-6 max-w-xl text-lg text-stone/75">{t('home.heroSub')}</p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link to="/apartments" className="btn-primary">{t('home.ctaBook')}</Link>
-            <Link to="/apartments" className="inline-flex items-center justify-center gap-2 rounded-card border border-stone/30 px-5 py-2.5 text-sm font-medium text-stone transition hover:border-stone hover:bg-white/5">
-              {t('home.ctaExplore')}
-            </Link>
-          </div>
         </div>
       </section>
+
+      <div className="mx-auto max-w-6xl px-6">
+        <SearchWidget className="-mt-12 md:-mt-16" />
+      </div>
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="mb-10 text-3xl">{t('home.whyTitle')}</h2>
